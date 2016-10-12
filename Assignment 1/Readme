@@ -1,0 +1,67 @@
+Programming assignment:
+
+type in : help *name of function* for a short description of the function on the command line
+
+Question I
+
+Instructions : run test_objects.m 
+
+The inputs to the functions can be changed in the script at the inputs.
+
+Binarisation:(p1.m)
+
+Threshold for 'two_objects.pgm', 'many_objects_1.pgm' and 'many_objects_2.pgm' is taken 100.
+
+Connected components:(p2.m)
+
+Sequential Labeling Algorithm is implemented, the conditions for labeling are checked and equivalences are resolved by Union Find Algorithm. In first pass, all equivalences are stored.Union Find attempts to capture equivalences in labelings and merge into groups with common labels In second pass, the parent root id is found by resolving the pixel labels parent characterising the group it belongs to. 4 neighbour connectivity is used.(the case where the pixels parent id is not found i.e is referenced to as NaN is taken as background.
+
+A total of 17 components are found for the image 'two_objects.pgm'
+
+The online content refered to for implementation is:from
+
+Database creation: (p3.m)
+
+A database consisting of the x and y centes, minimum moment and roundness, is generated along with the overlays, which are essentially binary masks of the object identified.17 overlays and databases are found.
+
+Object Matching: (p4.m)
+
+Databases from 'two_objects.pgm' is compared against the database for 'many_objects_1.pgm' and 'many_objects_2.pgm'. A total of 6 matches are found for the former and 8 for the latter. The output image generated gives the overlay masks with the locations of the centers.
+Here, the comparison criteria used is roundness and is thresholded between -0.025 to 0.025 around the roundness of the comparison database. By using other moments or improving the threshold, the matching criteria can be improved.
+
+Obejcts with very low roundness (less than 0.1) are ignored to prevent false matches
+
+The output images contain the detected centers along with the orientations of the directions of computed minimum moment.
+
+Extra functions included:
+
+1. calculate_min_moment(overlay,area): returns the minimum moment, roundness and the orientations with the overlay and area as input
+2. calculate_moment(overlay,area): returns the centers(first moments) with the overlay and area as input
+3. calculate_second_moment(overlay,area) : returns the second moments a,b,c with the overlay and area as input
+
+
+Question II
+
+Instructions : run test_script_2.m
+
+The inputs to the functions can be changed in the script at the inputs.
+
+Gradient Image Generation: (p5.m)
+
+Sobel mask = [1 2 1; 0 0 0; -1 -2 -1] is convolved with the image, it is chosen as the most preferable mask because the mean of the elements is 0 and edge detection is clear.The gradient magnitude is generated from the x and y gradient image by convolving with the horizontal and vertical filters
+
+Hough Transform (p6.m)
+
+A non vectorised implementation of the hough transform is computed for the image. The edge threshold is taken as 100. The theta resolutions is 1/2 degree(pi/360) and rho resolution is 1/500.
+
+for diag = sqrt(m^2+n^2)
+rho range = [-diag,+diag]
+theta range = [-pi/2 pi/2]
+
+For properly displaying the output hough image, the votes are scaled between 0 - 255 and displayed in grayscale intensity
+
+Hough Line (p7.m)
+
+From the hough input image, strong candidates are identified and their indices are extracted, the corresponding theta and rho are calculated back and converted into [x,y] co-ordinates for display
+The threshold for a strong line is taken as 0.98 for the scaled hough image.
+

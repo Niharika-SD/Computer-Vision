@@ -13,11 +13,11 @@ function [matches] = match_features_t1(feature_coords1,feature_coords2,descripto
     %%%
     
 if(size(image1,3)==3&& size(image2,3)==3)
-   image_1 = im2double(rgb2gray(image1));
-   image_2 = im2double(rgb2gray(image2));
+   image_1 = rgb2gray(image1);
+   image_2 = rgb2gray(image2);
 else
-   image_1 = im2double(image1);
-   image_2 = im2double(image2);
+   image_1 = image1;
+   image_2 = image2;
 
 end
 
@@ -36,7 +36,7 @@ for i = 1: size(feature_coords1)
             
         f2 = dist_meas(i,find(dist_new == min(dist_new),1,'first'));
             
-        if(f1/f2 <= 0.6)
+        if(f1/f2 <= 0)
            match_array = vertcat(match_array,[i,j_match]);
         end
         
@@ -52,6 +52,8 @@ figure,imshow(I,[]),hold on
 
 [~,n] =size(image1);
 for i = 1: size(matches,1)
+    fprintf('%d,%d, \n',(feature_coords1(matches(i,1),2)),(feature_coords1(matches(i,1),1)));
+    fprintf('%d,%d, \n',(feature_coords2(matches(i,2),2)),(feature_coords2(matches(i,2),1)));
     c = [(feature_coords1(matches(i,1),2)),n+feature_coords2(matches(i,2),2)];
     r = [(feature_coords1(matches(i,1),1)),(feature_coords2(matches(i,2),1))];
     plot(c,r,'r');

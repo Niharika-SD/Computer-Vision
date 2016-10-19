@@ -59,6 +59,8 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
     A1 =[];
     inl_x1 = [];
     inl_x2 = [];
+    out_x1 = [];
+    out_x2 = [];
     for k =1:size(inl_x_1,1)
         
         if(inl_x_1(k,3)==1)
@@ -69,6 +71,9 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
         A1 =vertcat(A1,C);
         inl_x1 =vertcat(inl_x1,[x_1(k,1),x_1(k,2)]);
         inl_x2 =vertcat(inl_x2,[x_2(k,1),x_2(k,2)]);
+        else
+        out_x1 =vertcat(out_x1,[x_1(k,1),x_1(k,2)]);
+        out_x2 =vertcat(out_x1,[x_2(k,1),x_2(k,2)]);
         end   
         
     end
@@ -83,6 +88,12 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
     x = [inl_x1(k,1),n+inl_x2(k,1)];
     y = [inl_x1(k,2),inl_x2(k,2)];
     plot(x,y,'r');
+   end
+   
+   for k = 1: size(out_x1,1)
+    x = [out_x1(k,1),n+out_x2(k,1)];
+    y = [out_x1(k,2),out_x2(k,2)];
+    plot(x,y,'y');
    end
     
 end

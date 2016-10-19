@@ -63,8 +63,7 @@ function [proj_xform] = compute_proj_xform(matches,features1,features2,image1,im
     A =[];
     inl_x1 = [];
     inl_x2 = [];
-    out_x1 =[];
-    out_x2 =[];
+    out_x1 =
     for k =1:size(inl_x_1,1)
         if(inl_x_1(k,3)==1)
             
@@ -73,14 +72,12 @@ function [proj_xform] = compute_proj_xform(matches,features1,features2,image1,im
         inl_x1 =vertcat(inl_x1,[x_1(k,1),x_1(k,2)]);
         inl_x2 =vertcat(inl_x2,[x_2(k,1),x_2(k,2)]);  
         else
-        out_x1 =vertcat(out_x1,[x_1(k,1),x_1(k,2)]);
-        out_x2 =vertcat(out_x1,[x_2(k,1),x_2(k,2)]);
         end
             
         
     end
    [~,~,V] = svd(A);
-   proj_xform = reshape(V(:,9),[3,3]);
+   proj_xform = reshape(V(:,9),[3,3])';
    
    I = [image1 image2];
    figure,imshow(I,[]),hold on
@@ -92,11 +89,5 @@ function [proj_xform] = compute_proj_xform(matches,features1,features2,image1,im
     plot(x,y,'r');
    end
     
-   
-   for k = 1: size(out_x1,1)
-    x = [out_x1(k,1),n+out_x2(k,1)];
-    y = [out_x1(k,2),out_x2(k,2)];
-    plot(x,y,'y');
-   end
 end
 

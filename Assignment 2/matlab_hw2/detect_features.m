@@ -30,7 +30,7 @@ function [ rows,cols ] = detect_features(image)
     corner_measure = (Ix_2.*Iy_2 - Ix_Iy.^2)./(Ix_2 + Iy_2 + eps);
     %eps prevents the denominator from going to zero
     
-    threshold = 0.05;
+    threshold = 0.01;
     radius = 1;
     
     %threshold the corner image

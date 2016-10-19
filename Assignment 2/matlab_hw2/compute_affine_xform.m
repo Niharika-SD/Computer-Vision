@@ -11,7 +11,7 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
 	% Returns:
 	%	affine_xform (ndarray): a 3x3 Affine transformation matrix between the two images, computed using the matches.
 	% 
-    threshold = 1;
+    threshold = 0.9;
     NumIter = 1000;
     % extracting and homogenising the co-ordinates
     x_1 =[];

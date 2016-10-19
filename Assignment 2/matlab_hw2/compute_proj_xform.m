@@ -11,8 +11,8 @@ function [proj_xform] = compute_proj_xform(matches,features1,features2,image1,im
 	% Returns:
 	%	proj_xform (ndarray): a 3x3 Projective transformation matrix between the two images, computed using the matches.
 	% 
-    threshold = 0.5*10e+04;
-    NumIter = 100;
+    threshold = 1;
+    NumIter = 1000;
     % extracting and homogenising the co-ordinates
     x_1 =[0,0,0];
     x_2 =[0,0,0];
@@ -44,15 +44,20 @@ function [proj_xform] = compute_proj_xform(matches,features1,features2,image1,im
         
         [~,~,V] =svd(A);
         H(i,:) = V(:,9) ;
-        X1 = reshape(H(i,:),3,3) * x_2';
+        X1 = reshape(H(i,:),3,3)' * x_2';
+        for v = 1:size(X1,2)
+           X1(:,v) = X1(:,v)./X1(3,v);
+        end
+        X1
         
         sq_err = ((X1'-x_1).^2)';
-        err = sum(sq_err);
+        err = sqrt(sum(sq_err,1))
         score(i,:) = sum(err < threshold);
         inliers(i,:) = (err < threshold);
+        clear A B
     end
     
-    best = find(score == max(score));
+    best = find(score == max(score),1,'first');
  
     inl_x_1 =x_1.*[inliers(best,:)',inliers(best,:)',inliers(best,:)'];
     

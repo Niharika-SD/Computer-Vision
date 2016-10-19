@@ -10,13 +10,10 @@ function [matches] = match_features(feature_coords1,feature_coords2,image1,image
 	% 	matches : list of index pairs of possible matches. For example, if the 4-th feature in feature_coords1 and the 1-st feature
 	%							  in feature_coords2 are determined to be matches, the list should contain (4,1).
 	%%%
-matches = [0,0];
-SSD_measure = zeros(size(feature_coords1),size(feature_coords2));
+    
 wind_size = 3;
 s = (wind_size-1)/2 ;
-
-method = 'NCC comparison';
-
+matches =[];
 if(size(image1,3)==3&& size(image2,3)==3)
    image_1 = rgb2gray(image1);
    image_2 = rgb2gray(image2);
@@ -40,11 +37,6 @@ for i = 1:size(feature_coords1)
         r2 = b(1);
         c2 = b(2);
         
-        %compute SSD measure
-        if (strcmp(method,'SSD comparison'))
-        SSD = (image1_p(r1:r1+2*s,c1:c1+2*s)-image2_p(r2:r2+2*s,c2:c2+2*s)).^2;
-        SSD_measure(i,j) = sum(sum(SSD));       
-        else
         img1_vec = image1_p(r1:r1+2*s,c1:c1+2*s);
         img1_vec = reshape(img1_vec,[wind_size^2,1]) - mean(mean(img1_vec)) ;
         img1_vec = img1_vec/std(img1_vec);
@@ -54,36 +46,24 @@ for i = 1:size(feature_coords1)
         img2_vec = img2_vec/std(img2_vec);
         
         NCC(i,j) = sum(img1_vec.*img2_vec)/(wind_size)^2 ;
+    end
+    
+      j_match = find(NCC(i,:) == max(NCC(i,:)));    
+    
+    
+      match_array =[];
+    
+      if(~isempty(j_match))
+        
+        for v = 1:size(j_match)
+            match_array = vertcat(match_array,[i,j_match(v)]);
         end
-    end
-    if(strcmp(method,'SSD comparison'))
-    SSD_measure_r = SSD_measure(i,1:end-1);
-    
-    a = min(SSD_measure_r);
-    SSD_measure_r(SSD_measure_r > min(SSD_measure_r) )= inf;
-    b = min(SSD_measure_r);
-    
-    if (a/b > 1)
-    j_match = find(SSD_measure_r == min(SSD_measure_r));
-    else
-        j_match =[];
-    end
-    else
-    j_match = find(NCC(i,:) == max(NCC(i,:)));    
-    end
-    
-    match_array =[0,0];
-    
-    if(~isempty(j_match))
-    for v = 1:size(j_match)
-     match_array = vertcat(match_array,[i,j_match(v)]);
-    end
-    
-    matches = vertcat(matches,match_array(2:end,:));
-    end
+      end
+
+
+matches = vertcat(matches,match_array);
 end
 
-matches = matches(2:end,:);
 I = [image1 image2];
 
 figure,imshow(I,[]),hold on

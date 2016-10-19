@@ -30,8 +30,8 @@ function [ rows,cols ] = detect_features(image)
     corner_measure = (Ix_2.*Iy_2 - Ix_Iy.^2)./(Ix_2 + Iy_2 + eps);
     %eps prevents the denominator from going to zero
     
-    threshold = 0.17;
-    radius = 3;
+    threshold = 0.05;
+    radius = 1;
     
     %threshold the corner image
     [rows,cols] = nonmaxsuppts(corner_measure, radius, threshold, image);    

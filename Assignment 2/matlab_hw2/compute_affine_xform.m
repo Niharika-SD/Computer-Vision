@@ -11,8 +11,8 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
 	% Returns:
 	%	affine_xform (ndarray): a 3x3 Affine transformation matrix between the two images, computed using the matches.
 	% 
-    threshold = 0.5*10e+04;
-    NumIter = 100;
+    threshold = 1;
+    NumIter = 1000;
     % extracting and homogenising the co-ordinates
     x_1 =[];
     x_2 =[];
@@ -22,7 +22,6 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
         x_1 = vertcat(x_1,[features1(matches(i,1),2),features1(matches(i,1),1),1]);
     end
    
-    H = zeros(NumIter,9);
     score = zeros(NumIter,1);
     inliers = zeros(NumIter,size(x_1,1));
         
@@ -36,40 +35,45 @@ function [affine_xform] = compute_affine_xform(matches,features1,features2,image
         y2_s =[x_2(indx(1),2),x_2(indx(2),2),x_2(indx(3),2)];
         
         A = [];
+        A1 =[];
         for j =1:3
-            B =[x2_s(j),y2_s(j),1,0,0,0,0,0,-x1_s(j); 0,0,0,x2_s(j),y2_s(j),1,0,0,-y1_s(j)];
-            A =vertcat(A,B);
+            B =[x2_s(j),y2_s(j),1,0,0,0;0,0,0,x2_s(j),y2_s(j),1];
+            C= [x1_s(j),y1_s(j)]';
+            A1 = vertcat(A1,C);
+            A = vertcat(A,B);
         end
         
-        [~,~,V] =svd(A);
-        H(i,:) = V(:,9) ;
-        X1 = reshape(H(i,:),3,3) * x_2';
-        
+        H = [reshape(pinv(A)*A1,[3,2])';[0,0,1]];
+        X1 = H*x_2';
         sq_err = ((X1'-x_1).^2)';
-        err = sum(sq_err);
+        err = sqrt(sum(sq_err,1));
         score(i,:) = sum(err < threshold);
         inliers(i,:) = (err < threshold);
     end
     
-    best = find(score == max(score));
+    best = find(score == max(score),1,'first');
  
-    inl_x_1 =x_1.*[inliers(best,:)',inliers(best,:)',inliers(best,:)'];
+    inl_x_1 =x_2.*[inliers(best,:)',inliers(best,:)',inliers(best,:)'];
     
     A =[];
+    A1 =[];
     inl_x1 = [];
     inl_x2 = [];
     for k =1:size(inl_x_1,1)
+        
         if(inl_x_1(k,3)==1)
             
-        B =[x_2(k,1),x_2(k,2),1,0,0,0,-x_1(k,1)*x_2(k,1),-x_1(k,1)*x_2(k,2),-x_1(k,1); 0,0,0,x_2(k,1),x_2(k,2),1,-x_1(k,2)*x_2(k,1),-x_1(k,2)*x_2(k,2),-x_1(k,2)];
+        B =[x_2(k,1),x_2(k,2),1,0,0,0;0,0,0,x_2(k,1),x_2(k,2),1];
+        C = [x_1(k,1);x_1(k,2)];
         A =vertcat(A,B);
+        A1 =vertcat(A1,C);
         inl_x1 =vertcat(inl_x1,[x_1(k,1),x_1(k,2)]);
         inl_x2 =vertcat(inl_x2,[x_2(k,1),x_2(k,2)]);
         end   
         
     end
-   [~,~,V] = svd(A);
-   affine_xform = reshape(V(:,9),[3,3]);
+   
+   affine_xform = [reshape(pinv(A)*A1,[3,2])';[0,0,1]];
    
    I = [image1 image2];
    figure,imshow(I,[]),hold on

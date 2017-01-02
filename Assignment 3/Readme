@@ -1,0 +1,108 @@
+
+To get any function descriptions please type help function_name on the command line 
+
+Problem 1: 
+
+Instructions:
+
+1.For problem 1, the generator code(calculates everything from scratch is included in Problem1.m), and takes approximately 1.5 hours to run.Please run
+Precomp_P1 to load stored files and generate results
+
+Stored Structures:  
+
+1.centers.mat :800x128 cluster centers matrix
+2.feat.mat:nx128 feature descriptors for training images.n is the total no of features in all training images
+3.feat_test.mat: n1x128 feature descriptors for testing images.n1 is the total no of features in all testing images
+4.BOW_train.mat: BOW representation for training images(histogram representations)
+5.BOW_train.mat: BOW representation for testing images(histogram representations)
+  
+Accuracy: 
+
+Using k means: 
+1.29.08 percent (result displayed when run)
+Improvement
+2.33.99 percent when each row is divided by the maximum to change the data range of BOW from 0-1
+
+Using SVM
+1.30.1 percent (without normalising BOW between -1 and 1)
+2.34.640 percent (normalising BOW,this is the result which is displayed when run)
+
+Note:By defeault, after setting up vl_feat, the function equivalents such as vl_svm get called (especially if the path preferences get changed, please remove the vlfeat folder from path to run the svm result (since multisvm.m provided requires the default function on matlab to be called and not the vl equivalent.(This was a problem in my PC and may not occur across all systems, however, for the kdtree model, the vl library was used) 
+
+Extra Functions used:
+
+BOW = perform_knn(feat,Mdl)
+given the features and kDTree model computes the BOW representation for each image using a prespecified number of cluster centers 800.The output is a normalised histogram BOW representation corresponding to one per image (in each respective row serially).Inputs are the features for each image and kDTree model based on the codebook(result of kmeans)
+
+[result] = multisvm(TrainingSet,GroupTrain,TestSet)
+Models a given training set with a corresponding group vector and classifies a given test set using an SVM classifier according to a 
+one vs. all relation. 
+
+Discussion:
+
+1. Owing to the computation time and the size of the dataset, a standard downsampling of 25 percent is performed on each of the training and testing images while computing sift features. To prevent aliasing issues, a standard antialiasing filter is applied while downsampling.
+
+2. Given the size of the training dictionary, (around 75000x128), a reduction to 800 is performed by kmeans.Taking too small a number of clusters would result in visual words not entirely representative of the features while too large a number causes overfitting.Deciding the number of classes in k means is highly dependent on the type of dataset, and is usually performed by finding the eigen representation and finding the minimum number of individual components required to preserve information from the dictionary. Given the size of the dataset, 800 seems a reasonable approximation, from the point of view of overfitting, but it isn't possible to exactly point out whether a better cluster number would work without performing an eigen energy decomposition on the dataset.
+
+3.SVM appears to perform better with the particular dataset, since the class separation based on a kernel is better at separating the data into contituent classes as compared to finding the nearest neighbours based on the histogram based distances (knn on BOW).SVM is better at identifying the maximal class separation boundary as compared to classification based on knn since the criteria for a class assignment is stricter in the SVM case.
+
+
+Problem 2: Depth image calculation:
+
+Type Problem2.m in the command line to run the entire routine generating the depth image.However owing to the computational time for NCC, the depth image has been pre-computed and stored in a file titled 'depth_image.mat'
+
+To skip running the generation routine, please run run_prob2.m which directly loads the precomputed file and displays it.
+
+Files included:
+
+1.depth_image.mat
+2.3D_point_cloud.txt
+3.depth_image.jpg
+
+Discussions
+
+1. To reduce the computational time for the NCC, the search window in image 2 has been reduced to a 100 pixels to the left of image1 given the geometry, this removes the possibility of stray matches in the opposite direction given the NCC criteria.
+
+2.The first and last 15 rows and columns are ignored for matching purposes(the depth image is not calculated for these pixels)
+
+3. To prevent infinite values being stored in the depth image(theoretically, depth can be infinity, however, the cases of false match are handled poorly if the x-x' is allowed to take the value 0) To handle close to 0 values and extra eps term is inserted into the denominator to clip values going too high
+
+4.For displaying the intensity image using imshow, a direct normalisation gives poor results because we have not limited the range for the infinity(or close to infinity) depth values.Instead, the result of the depth is inverted to give a result proportional to the disparity and the negative image of this is displayed instead
+
+5.While estimating the point cloud, the values going to infinite depth are ignored and are stored as 0,0,0 instead (see at the end of the text file). knowing the number of such values gives the points in the image calculated to have infinite depth as per the NCC criteria.
+
+6.Areas in the depth map of equal depth (grayscale value) are expected to be of equal depth, A visual inspection of the depth map generated reveals the conturs of the bust and vaguely the outline of the lampshade. However finer details in the background aren't getting depicted. Also, there are cetrain patches of extremely bright/dark areas appearing on the map which may not be characteristic of a reasonable depth estimate.
+
+Potential reasons for this include:
+
+1.Improper matching by NCC criteria. (Not strict enough, leads to many false matches)
+2.Improper Instensity scaling during display.
+3.Limitations due to matching window size.
+
+Problem 3:
+
+Please refer to the pdf file
+
+Problem 4: Fundamental matrix calculation:
+
+Run fundamental.m through the command line
+
+Functions used:
+
+1. vl_sift and ucb_match from vl library
+2. F = compute_fund_matrix(x_l,x_r,y_l,y_r)
+from the co-ordinates of matches x_l,x_r,y_l,y_r computes the fundamental matrix associated with the epipolar construct by least squares estimation
+3.[epl1,epl2] = EpipolarLines(F,x_1,x_2)
+with the fundamental matrix and the points in both images as input,computes the epipolar lines eli1 and eli2
+
+Files Provided:
+Feature_Matching.jpg: Displays feature correspodences
+EpipolarLines.jpg Displays the computed epipolar lines
+
+Discussions:
+
+1. To improve the quality of the feature matching step , a third argument 'threshold' of 2.5 is passed during feature matching.
+2. To remove outliers from the fundamental matrix estimation step, a RANSAC like technique is implemented whereby the inliers are found at each iteration using 4 samples from the subset. This improves the quality of the estimation step.
+3  The fundamental matrix parameter equations are solved using singular value decomposition and the inlier error threshold is 5. .
+4. In order to generate the epipolar lines computed, the line equation is found and using LineToBorder function in matlab the pairs of intersection points are found and the resultant line from their joining is computed.
+5. 8 random epipolar lines are plotted, and they are expected to intersect at the epipole. However, the lines may not consistently intersect at the same point because of inaccuracy in the computation of the fundamental matrix and/or due to imprecise feature matching.
